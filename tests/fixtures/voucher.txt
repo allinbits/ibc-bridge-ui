@@ -1,0 +1,1 @@
+{"denom":"ibc/F7F044B527F1D7A9301210CB2F71A567B4FEA33C96B2CA56CB7D443AA3984D0C","grc20reg_key":"gno.land/r/aib/ibc/apps/transfer.IBC-1","name":"0xbb30a5eec397174d5da58c4d180459da51114988","symbol":"IBC-1","decimals":18,"total_supply":"10000000000000000000"}

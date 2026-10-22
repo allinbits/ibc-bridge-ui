@@ -1,0 +1,100 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "hash": "gFEUyUMCQlEGmvbBqS1KLGFYGFJUwg5LQOtaP60g5lc=",
+    "height": "27993",
+    "index": 0,
+    "tx_result": {
+      "ResponseBase": {
+        "Error": null,
+        "Data": "KHN0cnVjdHsoImV0aGVyZXVtLTEiIHN0cmluZyksKDE3OTI2NDUzNzUgdWludDY0KSwoc2xpY2VbKHN0cnVjdHsoInRyYW5zZmVyIiBzdHJpbmcpLCgidHJhbnNmZXIiIHN0cmluZyksKCJpY3MyMC0xIiBzdHJpbmcpLCgiYXBwbGljYXRpb24veC1zb2xpZGl0eS1hYmkiIHN0cmluZyksKHNsaWNlWzB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwQTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDE0MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA0QzRCNDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMUEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNTc1Njc2RTZGNzQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAuLi4oNDgwKV0gW111aW50OCl9IGduby5sYW5kL3AvYWliL2liYy90eXBlcy92MC5QYXlsb2FkKV0gW11nbm8ubGFuZC9wL2FpYi9pYmMvdHlwZXMvdjAuUGF5bG9hZCksKHVuZGVmaW5lZCl9IGduby5sYW5kL3AvYWliL2liYy90eXBlcy92MC5Nc2dTZW5kUGFja2V0KQooNyB1aW50NjQpCgo=",
+        "Events": [
+          {
+            "@type": "/bank.TransferEvent",
+            "from": "g1kg6w7a4f0kup8wj9y33jdkqvvux7n559avyzcs",
+            "to": "g1tp3gk4quumurav4858hjfdy6hxtyffwmnxyr00",
+            "coins": "6000000ugnot"
+          },
+          {
+            "@type": "/bank.TransferEvent",
+            "from": "g1tp3gk4quumurav4858hjfdy6hxtyffwmnxyr00",
+            "to": "g1kg6w7a4f0kup8wj9y33jdkqvvux7n559avyzcs",
+            "coins": "1000000ugnot"
+          },
+          {
+            "@type": "/tm.Event",
+            "type": "send_packet",
+            "attrs": [
+              {
+                "key": "packet_source_client",
+                "value": "ethereum-1"
+              },
+              {
+                "key": "packet_dest_client",
+                "value": "client-0"
+              },
+              {
+                "key": "packet_sequence",
+                "value": "7"
+              },
+              {
+                "key": "packet_timeout_timestamp",
+                "value": "1792645375"
+              },
+              {
+                "key": "encoded_packet_hex",
+                "value": "0807120a657468657265756d2d311a08636c69656e742d3020ffb1e6d6062a9c040a087472616e7366657212087472616e736665721a0769637332302d31221a6170706c69636174696f6e2f782d736f6c69646974792d6162692ae003000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000004c4b4000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000000575676e6f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002867316b67367737613466306b757038776a397933336a646b7176767578376e3535396176797a6373000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a307845364631333930454635613936426233313943616436314231613434384444633835376130623838000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              }
+            ],
+            "pkg_path": "gno.land/r/aib/ibc/core"
+          },
+          {
+            "@type": "/tm.Event",
+            "type": "ibc_transfer",
+            "attrs": [
+              {
+                "key": "sender",
+                "value": "g1kg6w7a4f0kup8wj9y33jdkqvvux7n559avyzcs"
+              },
+              {
+                "key": "receiver",
+                "value": "0xE6F1390EF5a96Bb319Cad61B1a448DDc857a0b88"
+              },
+              {
+                "key": "denom",
+                "value": "ugnot"
+              },
+              {
+                "key": "amount",
+                "value": "5000000"
+              },
+              {
+                "key": "memo",
+                "value": ""
+              }
+            ],
+            "pkg_path": "gno.land/r/aib/ibc/apps/transfer"
+          },
+          {
+            "@type": "/tm.StorageDepositEvent",
+            "bytes_delta": "9023",
+            "fee_delta": "902300ugnot",
+            "pkg_path": "gno.land/r/aib/ibc/apps/transfer"
+          },
+          {
+            "@type": "/tm.StorageDepositEvent",
+            "bytes_delta": "810",
+            "fee_delta": "81000ugnot",
+            "pkg_path": "gno.land/r/aib/ibc/core"
+          }
+        ],
+        "Log": "msg:0,success:true,log:,events:[]",
+        "Info": ""
+      },
+      "GasWanted": "150000000",
+      "GasUsed": "90612209"
+    },
+    "tx": "CskBCgovdm0ubV9jYWxsEroBCihnMWtnNnc3YTRmMGt1cDh3ajl5MzNqZGtxdnZ1eDduNTU5YXZ5emNzEgw2MDAwMDAwdWdub3QiIGduby5sYW5kL3IvYWliL2liYy9hcHBzL3RyYW5zZmVyKghUcmFuc2ZlcjIKZXRoZXJldW0tMTIqMHhFNkYxMzkwRUY1YTk2QmIzMTlDYWQ2MUIxYTQ0OEREYzg1N2EwYjg4MgV1Z25vdDIHNTAwMDAwMDIKMTc5MjY0NTM3NTIAEhUIgMaGjwESDTEwMDAwMDAwdWdub3QaqAEKOgoTL3RtLlB1YktleVNlY3AyNTZrMRIjCiEDJfj2xQ+xszf0RCqy3QQ2EJ9DWlVzQ4Bz8TW0tvGhQo8SQKLtKprMCHfWOiaFKEXTthAtGqtcoEh+NcPqFqzm8BspGSU4pzUVOBdiOL9FF2amiyhtna0VnUtSIOvYKpHKpJUaKGcxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxbHV1eGU="
+  }
+}

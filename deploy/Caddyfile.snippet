@@ -1,0 +1,52 @@
+# Add this site block to /etc/caddy/Caddyfile.
+bridge.2-29-108-12.sslip.io {
+    root * /opt/gnoibc/bridge-ui
+    encode zstd gzip
+
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Frame-Options DENY
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://rpc.2-29-108-12.sslip.io https://rpc.sepolia.ethpandaops.io; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+    }
+
+    # Vite content hashes make these files safe to cache for a year.
+    @assets path /assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
+    handle @assets {
+        file_server
+    }
+    handle {
+        header Cache-Control "no-cache, must-revalidate"
+        try_files {path} /index.html
+        file_server
+    }
+}
+
+# Optional named snippet for the EXISTING rpc site. The live RPC currently
+# allows * (POST and OPTIONS were verified). To restrict browser access to
+# the bridge origin, replace the existing rpc site's reverse_proxy directive
+# with `import bridge_rpc_cors`, preserving its other settings.
+# Do not create a second rpc site block. This snippet includes the proxy.
+(bridge_rpc_cors) {
+    @bridge_origin header Origin https://bridge.2-29-108-12.sslip.io
+    header @bridge_origin {
+        Access-Control-Allow-Origin "https://bridge.2-29-108-12.sslip.io"
+        Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type"
+        Access-Control-Max-Age "600"
+    }
+    header +Vary Origin
+    @bridge_preflight {
+        method OPTIONS
+        header Origin https://bridge.2-29-108-12.sslip.io
+    }
+    respond @bridge_preflight 204
+    reverse_proxy 127.0.0.1:26657 {
+        # Suppress the node's wildcard CORS headers before setting ours.
+        header_down -Access-Control-Allow-Origin
+        header_down -Access-Control-Allow-Methods
+        header_down -Access-Control-Allow-Headers
+        header_down -Access-Control-Allow-Credentials
+    }
+}
