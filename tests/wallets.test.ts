@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { GNO_RPC } from '../src/lib/config'
-import { adenaCall, connectAdena, connectEvm, ensureSepolia, type Adena, type AdenaResponse, type EvmProvider } from '../src/lib/wallets'
+import { adenaCall, connectAdena, connectEvm, ensureEvmChain, type Adena, type AdenaResponse, type EvmProvider } from '../src/lib/wallets'
 import { loadHistory, saveEntry, type TransferEntry } from '../src/lib/history'
 
 const gno = 'g1kg6w7a4f0kup8wj9y33jdkqvvux7n559avyzcs'
@@ -72,12 +72,12 @@ describe('EIP-1193 adapter (MetaMask and Keplr)', () => {
       if (method === 'wallet_addEthereumChain') added = true
       return null
     }) }
-    await ensureSepolia(provider)
+    await ensureEvmChain(provider)
     expect(added).toBe(true)
   })
   it('does not add a chain if switching was rejected', async () => {
     const provider: EvmProvider = { request: vi.fn(async ({ method }) => { if (method === 'eth_chainId') return '0x1'; throw { code: 4001 } }) }
-    await expect(ensureSepolia(provider)).rejects.toMatchObject({ code: 4001 })
+    await expect(ensureEvmChain(provider)).rejects.toMatchObject({ code: 4001 })
     expect(provider.request).toHaveBeenCalledTimes(2)
   })
 })

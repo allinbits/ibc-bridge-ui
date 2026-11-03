@@ -1,8 +1,13 @@
 # gno.land testnet bridge
 
-A static bridge for GNOT (6 decimals) and TERC (18 decimals) over the live
+A static bridge. The default build supports GNOT (6 decimals) and TERC (18 decimals) over the live
 `test-ibc-1` ↔ Ethereum Sepolia IBC route. Intended origin:
 https://bridge.2-29-108-12.sslip.io.
+
+An opt-in Arc build supports `test-arc-1` ↔ Arc Testnet at
+https://bridge-2.2-29-108-12.sslip.io, with GNOT and USDC (both 6 decimals).
+See [Arc build and deployment](deploy/ARC.md). Plain `npm run build` keeps
+the existing Sepolia route, wallets, tokens, addresses, fees, and timing.
 
 ```sh
 npm ci
@@ -51,11 +56,18 @@ requested or stored.
 
 `src/lib/` holds protocol, wallet, bigint, query, status, and persistence
 code; `src/App.tsx` and `src/styles.css` hold the responsive light/dark UI.
-Endpoints and contracts are fixed in `src/lib/config.ts`; update Caddy's CSP
-when changing endpoints.
+`src/lib/config.ts` exposes the selected build-time route. Defaults and
+validation live in `src/lib/routes.ts`; Arc contract addresses and tokens
+come from the deployment JSON or a generated local config file. Set
+`VITE_BRIDGE_ROUTE=arc` and `VITE_BRIDGE_CONFIG=./arc.local.json` to select it.
+Missing or invalid Arc configuration fails the build. Keep Caddy's CSP in
+sync with the selected route's endpoints. All build configuration is public.
 
 `npm test` checks amounts, checksums, fees, MsgCall structure, errors,
-pagination, and captured live tm2 statuses. ABI vectors are independently
+pagination, captured live tm2 statuses, route selection, Arc configuration,
+wallet network parameters, and Arc transfers/tracking with wallet/RPC stubs.
+The Arc deployment fixture uses synthetic addresses, never live contracts.
+ABI vectors are independently
 produced with go-ethereum `abi.Pack` and the exact struct from
 gno-eth-ibc's `relayer/eth/erc20.go`; the generator is
 `scripts/reference-vector.go`. To regenerate, run it inside that project's
@@ -75,6 +87,6 @@ This is testnet software. Real extension approvals and live signed end-to-end
 transfers require browser-wallet acceptance testing. Public RPC availability
 and relayer/governance state affect timing. The route uses uint256 token
 amounts but caps transfers at 2^96−1; gno native amount plus fee must fit
-2^63−1. Only these two tokens and this route are supported. Replacement
+2^63−1. Each build supports one configured route and its token list. Replacement
 clients, recovery decisions, Ethereum queued refunds, and governance losses
 require operator support. Timeouts need relayer proofs, not just elapsed time.

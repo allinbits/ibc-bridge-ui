@@ -1,4 +1,4 @@
-import type { Direction, Token } from './config'
+import { ROUTE, TOKENS, type Direction, type Token } from './config'
 
 export interface TransferEntry {
   id: string; direction: Direction; token: Token; amount: string; sender: string; receiver: string;
@@ -7,7 +7,7 @@ export interface TransferEntry {
   ethStartBlock?: string; ethScanBlock?: string; destinationBaseline?: string; destinationBalance?: string;
   status: string; detail: string; pollError?: string; updated?: number;
 }
-const keyFor = (address: string) => `gno-bridge:v1:${address.toLowerCase()}`
+const keyFor = (address: string) => `gno-bridge:v1:${ROUTE.id === 'sepolia' ? '' : `${ROUTE.id}:${ROUTE.gno.chainId}:`}${address.toLowerCase()}`
 export const isTerminal = (status: string) => ['complete', 'refunded', 'failed', 'approval-only'].includes(status)
 export function loadHistory(addresses: string[]): TransferEntry[] {
   const entries = new Map<string, TransferEntry>()
@@ -16,7 +16,7 @@ export function loadHistory(addresses: string[]): TransferEntry[] {
       const stored: unknown = JSON.parse(localStorage.getItem(keyFor(address)) || '[]')
       if (!Array.isArray(stored)) continue
       for (const e of stored) {
-        if (!e || typeof e.id !== 'string' || !['gno-eth', 'eth-gno'].includes(e.direction) || !['GNOT', 'TERC'].includes(e.token) || !/^\d+$/.test(e.amount) || typeof e.sender !== 'string' || typeof e.receiver !== 'string' || typeof e.status !== 'string' || !/^\d+$/.test(e.timeout)) continue
+        if (!e || typeof e.id !== 'string' || !['gno-eth', 'eth-gno'].includes(e.direction) || !Object.hasOwn(TOKENS, e.token) || !/^\d+$/.test(e.amount) || typeof e.sender !== 'string' || typeof e.receiver !== 'string' || typeof e.status !== 'string' || !/^\d+$/.test(e.timeout)) continue
         if (![e.sender, e.receiver].some(a => a.toLowerCase() === address.toLowerCase())) continue
         const previous = entries.get(e.id)
         if (!previous || (e.updated ?? 0) > (previous.updated ?? 0)) entries.set(e.id, e as TransferEntry)

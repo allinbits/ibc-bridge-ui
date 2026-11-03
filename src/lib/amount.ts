@@ -1,4 +1,4 @@
-import { MAX_COIN, MAX_ROUTE_AMOUNT, MAX_UINT256, type Direction, type Token } from './config'
+import { isGnoNative, MAX_COIN, MAX_ROUTE_AMOUNT, MAX_UINT256, type Direction, type Token } from './config'
 
 export function parseAmount(text: string, decimals: number): bigint {
   if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) throw new Error('Invalid token decimals.')
@@ -23,9 +23,9 @@ export function quoteTransfer(direction: Direction, token: Token, amount: bigint
   if (amount <= 0n || amount > MAX_ROUTE_AMOUNT) throw new Error('This route accepts amounts up to 2^96 − 1 base units.')
   if (configuredFee < 0n) throw new Error('Invalid route fee.')
   // Voucher exits on gno are burned in full, with no fee (impl/v1/send.gno).
-  const fee = direction === 'gno-eth' && token === 'TERC' ? 0n : configuredFee
-  const total = direction === 'gno-eth' && token === 'GNOT' ? amount + fee : amount
-  if (direction === 'gno-eth' && token === 'GNOT' && total > MAX_COIN) throw new Error('Amount plus fee exceeds the native coin limit (2^63 − 1).')
+  const fee = direction === 'gno-eth' && !isGnoNative(token) ? 0n : configuredFee
+  const total = direction === 'gno-eth' && isGnoNative(token) ? amount + fee : amount
+  if (direction === 'gno-eth' && isGnoNative(token) && total > MAX_COIN) throw new Error('Amount plus fee exceeds the native coin limit (2^63 − 1).')
   if (direction === 'eth-gno' && amount <= fee) throw new Error('The amount must exceed the gno claim fee.')
-  return { fee, total, receive: direction === 'eth-gno' ? amount - fee : amount, send: direction === 'gno-eth' && token === 'GNOT' ? `${total}ugnot` : '' }
+  return { fee, total, receive: direction === 'eth-gno' ? amount - fee : amount, send: direction === 'gno-eth' && isGnoNative(token) ? `${total}ugnot` : '' }
 }

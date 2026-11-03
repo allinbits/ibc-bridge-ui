@@ -1,12 +1,11 @@
 import { createPublicClient, decodeEventLog, encodeFunctionData, http, type Address, type Hex } from 'viem'
-import { sepolia } from 'viem/chains'
 import { controlsAbi, erc20Abi, routerAbi, transferAbi } from './abi'
-import { ETH_CLIENT, ETH_RPC, ROUTER, TOKENS, TRANSFER, type Token } from './config'
+import { ETH_CLIENT, ETH_RPC, EVM_CHAIN, ROUTER, TOKENS, TRANSFER, type Token } from './config'
 import { sendEvm, type WalletOption } from './wallets'
 
-export const publicClient = createPublicClient({ chain: sepolia, transport: http(ETH_RPC, { timeout: 20_000, retryCount: 1 }) })
+export const publicClient = createPublicClient({ chain: EVM_CHAIN, transport: http(ETH_RPC, { timeout: 20_000, retryCount: 1 }) })
 export const ethBalance = (token: Token, address: Address) => publicClient.readContract({ address: TOKENS[token].address, abi: erc20Abi, functionName: 'balanceOf', args: [address] })
-export const reservedTerc = () => publicClient.readContract({ address: TRANSFER, abi: controlsAbi, functionName: 'reserved', args: [ETH_CLIENT, TOKENS.TERC.address] })
+export const reservedToken = (token: Token) => publicClient.readContract({ address: TRANSFER, abi: controlsAbi, functionName: 'reserved', args: [ETH_CLIENT, TOKENS[token].address] })
 export function sendTransferArgs(token: Token, amount: bigint, receiver: string, timeout: bigint) {
   return { denom: TOKENS[token].address, amount, receiver, sourceClient: ETH_CLIENT, destPort: 'transfer', timeoutTimestamp: timeout, memo: '' }
 }
@@ -32,5 +31,5 @@ export function sequenceFromReceipt(logs: { address: string; data: Hex; topics: 
       if (event.eventName === 'SendPacket' && event.args.packet.sourceClient === ETH_CLIENT) return event.args.packet.sequence.toString()
     } catch { /* Other logs in the same receipt are unrelated. */ }
   }
-  throw new Error('The transaction receipt has no SendPacket for client-0.')
+  throw new Error(`The transaction receipt has no SendPacket for ${ETH_CLIENT}.`)
 }

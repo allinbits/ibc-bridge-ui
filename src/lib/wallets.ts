@@ -1,7 +1,6 @@
 import { createWalletClient, custom, type Address, type EIP1193Provider, type Hex } from 'viem'
-import { sepolia } from 'viem/chains'
 import { ethereumAddress, validGnoAddress } from './address'
-import { GNO_CHAIN, GNO_RPC } from './config'
+import { EVM_CHAIN, GNO_CHAIN, GNO_RPC, ROUTE } from './config'
 
 export interface AdenaResponse<T = Record<string, unknown>> { code: number; status: string; type: string; message: string; data: T }
 export interface AdenaAccount { address: string; chainId: string }
@@ -41,7 +40,7 @@ export async function readAdenaAccount(): Promise<AdenaAccount> {
   if (!window.adena) throw new Error('Install the Adena browser extension, then reload this page.')
   const account = adenaResult(await window.adena.GetAccount())
   if (!validGnoAddress(account.address)) throw new Error('Adena returned an invalid gno address.')
-  if (account.chainId !== GNO_CHAIN) throw new Error('Switch Adena to test-ibc-1 using Connect Adena.')
+  if (account.chainId !== GNO_CHAIN) throw new Error(`Switch Adena to ${GNO_CHAIN} using Connect Adena.`)
   return account
 }
 export async function connectAdena(): Promise<AdenaAccount> {
@@ -50,7 +49,7 @@ export async function connectAdena(): Promise<AdenaAccount> {
   adenaResult(await adenaResponse(() => adena.AddEstablish('gno.land Bridge'), ['ALREADY_CONNECTED']), ['ALREADY_CONNECTED'])
   const switched = await adenaResponse(() => adena.SwitchNetwork(GNO_CHAIN), ['UNADDED_NETWORK', 'REDUNDANT_CHANGE_REQUEST'])
   if (switched.type === 'UNADDED_NETWORK') {
-    adenaResult(await adenaResponse(() => adena.AddNetwork({ chainId: GNO_CHAIN, chainName: 'gno.land · test-ibc-1', rpcUrl: GNO_RPC }), ['NETWORK_ALREADY_EXISTS']), ['NETWORK_ALREADY_EXISTS'])
+    adenaResult(await adenaResponse(() => adena.AddNetwork({ chainId: GNO_CHAIN, chainName: `gno.land · ${GNO_CHAIN}`, rpcUrl: GNO_RPC }), ['NETWORK_ALREADY_EXISTS']), ['NETWORK_ALREADY_EXISTS'])
     adenaResult(await adenaResponse(() => adena.SwitchNetwork(GNO_CHAIN), ['REDUNDANT_CHANGE_REQUEST']), ['REDUNDANT_CHANGE_REQUEST'])
   } else adenaResult(switched, ['REDUNDANT_CHANGE_REQUEST'])
   return readAdenaAccount()
@@ -97,29 +96,30 @@ export function discoverWallets(onChange: (options: WalletOption[]) => void): ()
   const timer = window.setInterval(scan, 2_000)
   return () => { window.clearInterval(timer); window.removeEventListener('eip6963:announceProvider', announce) }
 }
-export async function ensureSepolia(provider: EvmProvider): Promise<void> {
-  if (BigInt(String(await provider.request({ method: 'eth_chainId' }))) === BigInt(sepolia.id)) return
-  try { await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] }) }
+export async function ensureEvmChain(provider: EvmProvider): Promise<void> {
+  const chainId = `0x${EVM_CHAIN.id.toString(16)}`
+  if (BigInt(String(await provider.request({ method: 'eth_chainId' }))) === BigInt(EVM_CHAIN.id)) return
+  try { await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] }) }
   catch (error) {
     if ((error as { code?: number }).code !== 4902) throw error
-    await provider.request({ method: 'wallet_addEthereumChain', params: [{ chainId: '0xaa36a7', chainName: 'Sepolia', nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: [sepolia.rpcUrls.default.http[0]], blockExplorerUrls: ['https://sepolia.etherscan.io'] }] })
-    await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] })
+    await provider.request({ method: 'wallet_addEthereumChain', params: [{ chainId, chainName: ROUTE.evm.name, nativeCurrency: ROUTE.evm.nativeCurrency, rpcUrls: [ROUTE.evm.walletRpc], blockExplorerUrls: [ROUTE.evm.explorer] }] })
+    await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] })
   }
-  if (BigInt(String(await provider.request({ method: 'eth_chainId' }))) !== BigInt(sepolia.id)) throw new Error('Switch your Ethereum wallet to Sepolia before continuing.')
+  if (BigInt(String(await provider.request({ method: 'eth_chainId' }))) !== BigInt(EVM_CHAIN.id)) throw new Error(`Switch your Ethereum wallet to ${ROUTE.evm.name} before continuing.`)
 }
 export async function connectEvm(option: WalletOption): Promise<Address> {
-  await ensureSepolia(option.provider)
+  await ensureEvmChain(option.provider)
   const accounts = await option.provider.request({ method: 'eth_requestAccounts' }) as string[]
   if (!accounts?.[0]) throw new Error('The wallet did not share an Ethereum account.')
   return ethereumAddress(accounts[0])
 }
 export async function assertEvmAccount(option: WalletOption, expected: Address) {
-  await ensureSepolia(option.provider)
+  await ensureEvmChain(option.provider)
   const accounts = await option.provider.request({ method: 'eth_accounts' }) as string[]
   if (!accounts[0] || accounts[0].toLowerCase() !== expected.toLowerCase()) throw new Error('Your Ethereum account changed. Reconnect and review the transfer again.')
 }
 export async function sendEvm(option: WalletOption, account: Address, to: Address, data: Hex): Promise<Hex> {
   await assertEvmAccount(option, account)
-  const client = createWalletClient({ account, chain: sepolia, transport: custom(option.provider as EIP1193Provider) })
+  const client = createWalletClient({ account, chain: EVM_CHAIN, transport: custom(option.provider as EIP1193Provider) })
   return client.sendTransaction({ to, data })
 }

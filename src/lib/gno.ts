@@ -1,4 +1,4 @@
-import { GNO_CLIENT, GNO_RPC, REALM, TOKENS, type Token } from './config'
+import { GNO_CLIENT, GNO_RPC, isGnoNative, REALM, TOKENS, type Token } from './config'
 import { parseRendered, type Claim, type Page, type Route, type SendRecord } from './status'
 import { quoteTransfer } from './amount'
 
@@ -55,8 +55,8 @@ export async function allPages<T>(path: string): Promise<T[]> {
 export const getClaims = () => allPages<Claim>(`routes/${GNO_CLIENT}/claims`)
 export const getSends = () => allPages<SendRecord>(`routes/${GNO_CLIENT}/sends`)
 export async function gnoBalance(token: Token, address: string): Promise<bigint> {
-  if (token === 'TERC') {
-    const data = await render<{ balance: string }>(`voucher/${TOKENS.TERC.denom}/balance/${address}`)
+  if (!isGnoNative(token)) {
+    const data = await render<{ balance: string }>(`voucher/${TOKENS[token].denom}/balance/${address}`)
     return BigInt(data.balance)
   }
   const coins = parseRendered<string>(await query(`bank/balances/${address}`))

@@ -1,9 +1,10 @@
 import { decodeErrorResult, type Hex } from 'viem'
 import { transferAbi } from './abi'
+import { ROUTE } from './config'
 
 const explanations: Record<string, string> = {
   GnoLimitsNotSet: 'This token is not enabled for this route. Governance must install its limits; contact the operators.',
-  GnoEscrowReserved: 'The Ethereum escrow is still reserved for refunds. Wait about 20 minutes after the outbound transfer is acknowledged, then retry.',
+  GnoEscrowReserved: ROUTE.timing.escrowError,
   GnoSendAboveMax: 'The amount exceeds the route’s maximum per transfer. Choose a smaller amount.',
   GnoSendBelowMin: 'The amount is below the route’s minimum per transfer. Choose a larger amount.',
   GnoRoutePaused: 'The route is paused by governance or guardians. Wait for the operators to reopen it.',

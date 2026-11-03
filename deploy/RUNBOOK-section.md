@@ -1,5 +1,9 @@
 ## Bridge web app
 
+For the separate bridge-2 Arc instance, use [ARC.md](ARC.md) for build-time
+configuration, deployment JSON conversion, tokens, and its CSP. The steps
+below describe the unchanged default Sepolia build.
+
 URL: https://bridge.2-29-108-12.sslip.io. Static Vite/React application; no
 service, backend, server keys, or environment secrets. It talks directly to
 the public gno and Sepolia RPCs. Wallets sign in the browser.
@@ -54,5 +58,5 @@ two-hour packet timeout needs a relayer proof to settle; passing the time
 alone does not refund. RPC outages leave the last state visible and retry.
 
 Rollback by restoring the previous static release. Rebuild after changing
-RPC endpoints/contracts in `src/lib/config.ts`; keep the Caddy CSP in sync.
+route configuration (`src/lib/routes.ts` or the Arc deployment config); keep the Caddy CSP in sync.
 Never put mnemonics or private keys in the frontend or build environment.

@@ -1,6 +1,6 @@
 import { hexToString, type Address, type Hex } from 'viem'
 import { routerAbi } from './abi'
-import { ETH_CLIENT, GNO_CLIENT, GNO_RPC, GNOWEB, ROUTER, TOKENS } from './config'
+import { ETH_CLIENT, GNO_CLIENT, GNO_RPC, GNOWEB, ROUTE, ROUTER, TOKENS } from './config'
 import { ethBalance, publicClient, sequenceFromReceipt } from './ethereum'
 import { getClaims, getSends, gnoBalance, gnoRpc } from './gno'
 import type { TransferEntry } from './history'
@@ -27,7 +27,7 @@ export function gnoTxInfo(response: unknown): { height: string; sequence?: strin
 }
 export const getGnoTx = async (hash: string) => gnoTxInfo(await gnoRpc('tx', { hash: gnoHashBase64(hash) }))
 export function transactionUrl(hash: string, chain: 'gno' | 'eth'): string {
-  return chain === 'eth' ? `https://sepolia.etherscan.io/tx/${hash}` : `${GNO_RPC}/tx?hash=${encodeURIComponent(gnoHashBase64(hash))}`
+  return chain === 'eth' ? `${ROUTE.evm.explorer}/tx/${hash}` : `${GNO_RPC}/tx?hash=${encodeURIComponent(gnoHashBase64(hash))}`
 }
 export const recordUrl = (entry: TransferEntry) => `${GNOWEB}/r/aib/ibc/apps/transfer:routes/${GNO_CLIENT}/${entry.direction === 'gno-eth' ? 'sends' : 'claims'}${entry.sequence ? `?from=${encodeURIComponent(packetKey(entry.sequence))}` : ''}`
 export function claimState(claim: Claim): { status: string; detail: string } {
@@ -67,10 +67,10 @@ export async function trackEntry(entry: TransferEntry): Promise<TransferEntry> {
           const ack = log.args.acknowledgements?.[0]
           if (ack && hexToString(ack) === '{"result":"AQ=="}') {
             next.status = 'delivered'
-            next.detail = 'Delivered on Sepolia. Waiting for the acknowledgement back to gno (~15 min).'
+            next.detail = ROUTE.timing.delivered
           } else {
             next.status = 'refund-pending'
-            next.detail = 'Sepolia refused delivery. Waiting for an error acknowledgement and refund on gno. A recent TERC send may still have reserved escrow.'
+            next.detail = `${ROUTE.evm.name} refused delivery. Waiting for an error acknowledgement and refund on gno. A recent ${ROUTE.id === 'sepolia' ? 'TERC' : entry.token} send may still have reserved escrow.`
           }
         }
         next.ethScanBlock = (to + 1n).toString()
@@ -82,7 +82,7 @@ export async function trackEntry(entry: TransferEntry): Promise<TransferEntry> {
   } else {
     if (!next.sequence) {
       const receipt = await publicClient.getTransactionReceipt({ hash: entry.hash as Hex })
-      if (receipt.status === 'reverted') return { ...next, status: 'failed', detail: 'The Sepolia transaction reverted. No bridge packet was sent. Gas was still spent.' }
+      if (receipt.status === 'reverted') return { ...next, status: 'failed', detail: `The ${ROUTE.evm.name} transaction reverted. No bridge packet was sent. Gas was still spent.` }
       next.sequence = sequenceFromReceipt(receipt.logs)
       next.sourceHeight = receipt.blockNumber.toString()
       next.ethStartBlock = receipt.blockNumber.toString()
@@ -95,8 +95,8 @@ export async function trackEntry(entry: TransferEntry): Promise<TransferEntry> {
       next.destinationBalance = (await gnoBalance(entry.token, entry.receiver)).toString()
       return { ...next, ...claimState(claim) }
     }
-    next.status = 'finalizing'
-    next.detail = 'Confirmed on Sepolia. Waiting for Ethereum finality and relay (~15–20 min), then a gno Claim transaction.'
+    next.status = ROUTE.id === 'arc' ? 'relaying' : 'finalizing'
+    next.detail = ROUTE.timing.pendingIncoming
     const head = await publicClient.getBlockNumber()
     const from = BigInt(next.ethScanBlock ?? next.ethStartBlock!)
     const to = head < from + 499n ? head : from + 499n
@@ -106,7 +106,7 @@ export async function trackEntry(entry: TransferEntry): Promise<TransferEntry> {
         publicClient.getContractEvents({ address: ROUTER, abi: routerAbi, eventName: 'TimeoutPacket', args: { sequence: BigInt(next.sequence) }, fromBlock: from, toBlock: to }),
       ])
       const failed = timeouts.some(l => l.args.packet?.sourceClient === ETH_CLIENT) || acks.some(l => l.args.packet?.sourceClient === ETH_CLIENT && l.args.acknowledgement === '0x4774d4a575993f963b1c06573736617a457abef8589178db8d10c94b4ab511ab')
-      if (failed) return { ...next, status: 'attention', detail: 'The packet failed or timed out on Sepolia. Refunds may be queued by route controls. Check your token balance and contact the operators.' }
+      if (failed) return { ...next, status: 'attention', detail: `The packet failed or timed out on ${ROUTE.evm.name}. Refunds may be queued by route controls. Check your token balance and contact the operators.` }
       next.ethScanBlock = (to + 1n).toString()
     }
   }
